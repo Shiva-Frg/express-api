@@ -1,17 +1,1 @@
-{
-    "1465": {
-        "username": "madfinger11",
-        "email": "maddy@gmail.com",
-        "password": "yddam5342"
-    },
-    "2646": {
-        "username": "yemiakin",
-        "email": "emiakiy@gmail.com",
-        "password": "iy@g65"
-    },
-    "3253": {
-        "username": "ikechifortune",
-        "email": "echifo@gmail.com",
-        "password": "ifo#mf23"
-    }
-}
+{"users":[{"id":1465,"username":"madfinger11","email":"maddy@gmail.com","password":"yddam5342"},{"id":3646},{"id":6646},{"id":7253,"username":"ikechifortune","email":"echifo@gmail.com","password":"ifo#mf23"},{"id":1985},{"id":1237},{"id":7735},{"id":2762},{"id":7548},{"id":3469},{"id":5457},{"id":8292},{"id":4845},{"id":2859}]}
