@@ -77,9 +77,9 @@ accountRoutes.put('/:id', (req, res) => {
     if (userIndex) {
       existAccounts.users[userIndex] = { id: userId, ...req.body }
       saveAccountData(existAccounts)
-      res.status(200).send(`new user with id:${req.params.id} has been updated`)
+      res.status(200).send(`Account with id:${req.params.id} has been updated`)
     } else {
-      res.status(404).send(`User with ID: ${userId} Not found!`)
+      res.status(404).send(`Account with ID: ${userId} Not found!`)
     }
   } catch (error) {
     res.status(500).send('Server Error!')
@@ -94,9 +94,9 @@ accountRoutes.delete('/:id', (req, res) => {
     if (userIndex) {
       existAccounts.users = existAccounts.users.filter((i) => i.id !== userId)
       saveAccountData(existAccounts)
-      res.status(200).send(`new user with id:${req.params.id} has been deleted`)
+      res.status(200).send(`Account with id:${req.params.id} has been deleted`)
     } else {
-      res.status(404).send(`User with ID: ${userId} Not found!`)
+      res.status(404).send(`Account with ID: ${userId} Not found!`)
     }
   } catch (error) {
     res.status(500).send('Server Error!')
