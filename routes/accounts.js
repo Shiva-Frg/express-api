@@ -51,18 +51,32 @@ accountRoutes.post('/', (req, res) => {
   try {
     const existAccounts = getAccountData()
 
-    const user = {
-      id: req.body.id,
-      username: req.body.username,
-      email: req.body.email,
-      password: req.body.password,
-    }
+    const newId = Math.floor(1000 + Math.random() * 9000)
 
-    existAccounts.users.push(user)
-    saveAccountData(existAccounts)
-    res
-      .status(200)
-      .send(`new account with id:${req.body.id} has been added successfully`)
+    let user = null
+    if (
+      req.body.username !== undefined &&
+      req.body.email !== undefined &&
+      req.body.password !== undefined
+    ) {
+      user = {
+        id: newId,
+        username: req.body.username,
+        email: req.body.email,
+        password: req.body.password,
+      }
+      existAccounts.users.push(user)
+      saveAccountData(existAccounts)
+      res
+        .status(200)
+        .send(`new account with id:${newId} has been added successfully`)
+    } else {
+      res
+        .status(400)
+        .send(
+          'There is not any data to add to the Database or your data do not have username or email or password'
+        )
+    }
   } catch (error) {
     res.status(500).send('Server Error!')
     console.log(error)
