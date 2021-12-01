@@ -17,16 +17,6 @@ const saveAccountData = (data) => {
 }
 
 const getAccountData = () => {
-  // const jsonData = fs.readFile(dataPath, 'utf-8', (err, data) => {
-  //   const page = req.query.page
-  //   const limit = req.query.limit
-  //   const startIndex = (page - 1) * limit
-  //   const endIndex = page * limit
-  //   const parsedData = JSON.parse(data)
-  //   const users = parsedData.users
-  //   const result = users.slice(startIndex, endIndex)
-  //   return result
-  // })
   const jsonData = fs.readFileSync(dataPath)
   return JSON.parse(jsonData)
 }
@@ -35,13 +25,11 @@ accountRoutes.get('/', (req, res) => {
   try {
     const existAccounts = getAccountData()
 
-    const page = req.query.page
-    const limit = req.query.limit
-    if (!page) {
-      page = 1
-    }
-    if (!limit) {
-      limit = 5
+    let page = 1
+    let limit = 5
+    if (req.query.page !== undefined && req.query.limit !== undefined) {
+      page = req.query.page
+      limit = req.query.limit
     }
 
     const startIndex = (page - 1) * limit
@@ -62,14 +50,22 @@ accountRoutes.get('/', (req, res) => {
 accountRoutes.post('/', (req, res) => {
   try {
     const existAccounts = getAccountData()
-    const newId = Math.floor(1000 + Math.random() * 9000)
-    existAccounts.users.push({ id: newId, ...req.body })
+
+    const user = {
+      id: req.body.id,
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
+    }
+
+    existAccounts.users.push(user)
     saveAccountData(existAccounts)
     res
       .status(200)
-      .send(`new account with id:${newId} has been added successfully`)
+      .send(`new account with id:${req.body.id} has been added successfully`)
   } catch (error) {
     res.status(500).send('Server Error!')
+    console.log(error)
   }
 })
 
