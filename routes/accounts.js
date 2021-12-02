@@ -1,6 +1,7 @@
 const express = require('express')
 const accountRoutes = express.Router()
 const fs = require('fs')
+const db = require('../db/')
 
 const dataPath = './details/account.json'
 
@@ -20,6 +21,16 @@ const getAccountData = () => {
   const jsonData = fs.readFileSync(dataPath)
   return JSON.parse(jsonData)
 }
+
+accountRoutes.get('/test', (req, res) => {
+  db.any('select username, email from person;')
+    .then((rows) => {
+      res.json(rows)
+    })
+    .catch((error) => {
+      res.status(500).send('Error from server')
+    })
+})
 
 accountRoutes.get('/', (req, res) => {
   try {
