@@ -1,131 +1,89 @@
 const express = require('express')
 const accountRoutes = express.Router()
-const fs = require('fs')
 const db = require('../db/')
 
-const dataPath = './details/account.json'
+accountRoutes.get('/', (req, res) => {
+  let page = 1
+  let limit = 5
+  if (req.query.page !== undefined && req.query.limit !== undefined) {
+    page = req.query.page
+    limit = req.query.limit
+  }
 
-const findeIndex = (data, id) => {
-  const index = data.users.findIndex((item) => {
-    return item.id === id
-  })
-  return index
-}
-
-const saveAccountData = (data) => {
-  const stringifyData = JSON.stringify(data)
-  fs.writeFileSync(dataPath, stringifyData)
-}
-
-const getAccountData = () => {
-  const jsonData = fs.readFileSync(dataPath)
-  return JSON.parse(jsonData)
-}
-
-accountRoutes.get('/test', (req, res) => {
-  db.any('select username, email from person;')
+  db.func('getuserslist', [page, limit])
     .then((rows) => {
       res.json(rows)
     })
     .catch((error) => {
+      console.log(error)
       res.status(500).send('Error from server')
     })
 })
 
-accountRoutes.get('/', (req, res) => {
-  try {
-    const existAccounts = getAccountData()
-
-    let page = 1
-    let limit = 5
-    if (req.query.page !== undefined && req.query.limit !== undefined) {
-      page = req.query.page
-      limit = req.query.limit
-    }
-
-    const startIndex = (page - 1) * limit
-    const endIndex = page * limit
-    const users = existAccounts.users
-    const result = users.slice(startIndex, endIndex)
-
-    if (result.length !== 0) {
-      res.send(result)
-    } else {
-      res.send('There is no user anymore!')
-    }
-  } catch (error) {
-    res.status(500).send('Server Error!')
-  }
+accountRoutes.get('/:id', (req, res) => {
+  db.func('finduser', [req.params.id])
+    .then((rows) => {
+      res.json(rows)
+    })
+    .catch((error) => {
+      console.log(error)
+      res.status(500).send('Error from server')
+    })
 })
 
 accountRoutes.post('/', (req, res) => {
-  try {
-    const existAccounts = getAccountData()
-
-    const newId = Math.floor(1000 + Math.random() * 9000)
-
-    let user = null
-    if (
-      req.body.username !== undefined &&
-      req.body.email !== undefined &&
-      req.body.password !== undefined
-    ) {
-      user = {
-        id: newId,
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
+  if (
+    req.body.username !== undefined &&
+    req.body.email !== undefined &&
+    req.body.password !== undefined
+  ) {
+    db.func('AddUsers', [req.body.username, req.body.email, req.body.password])
+      .then(() => {
+        res.status(200).send(`new account with id: has been added successfully`)
+      })
+      .catch((error) => {
+        console.log(error)
+        res.status(500).send('Error from server')
+      })
+  } else {
+    let fields = ['username', 'email', 'password']
+    let emptyFields = []
+    fields.map((item) => {
+      if (item in req.body === false) {
+        emptyFields.push(item)
       }
-      existAccounts.users.push(user)
-      saveAccountData(existAccounts)
-      res
-        .status(200)
-        .send(`new account with id:${newId} has been added successfully`)
-    } else {
-      res
-        .status(400)
-        .send(
-          'There is not any data to add to the Database or your data do not have username or email or password'
-        )
-    }
-  } catch (error) {
-    res.status(500).send('Server Error!')
-    console.log(error)
+    })
+    console.log(emptyFields)
+    res.status(400).send(`Your data does'nt have ${emptyFields} fields`)
   }
 })
 
 accountRoutes.put('/:id', (req, res) => {
-  try {
-    let existAccounts = getAccountData()
-    const userId = parseInt(req.params['id'])
-    const userIndex = findeIndex(existAccounts, userId)
-    if (userIndex) {
-      existAccounts.users[userIndex] = { id: userId, ...req.body }
-      saveAccountData(existAccounts)
-      res.status(200).send(`Account with id:${req.params.id} has been updated`)
-    } else {
-      res.status(404).send(`Account with ID: ${userId} Not found!`)
-    }
-  } catch (error) {
-    res.status(500).send('Server Error!')
-  }
+  db.func('updateuser', [req.params.id, req.body.email, req.body.password])
+    .then(() => {
+      res.status(200).send({
+        status: 'success',
+        message: `user with id: ${req.params.id} has been updated successfully`,
+      })
+    })
+    .catch((error) => {
+      console.log(error)
+      res.status(500).send('Error from server')
+    })
 })
 
 accountRoutes.delete('/:id', (req, res) => {
-  try {
-    let existAccounts = getAccountData()
-    const userId = parseInt(req.params['id'])
-    const userIndex = findeIndex(existAccounts, userId)
-    if (userIndex) {
-      existAccounts.users = existAccounts.users.filter((i) => i.id !== userId)
-      saveAccountData(existAccounts)
-      res.status(200).send(`Account with id:${req.params.id} has been deleted`)
-    } else {
-      res.status(404).send(`Account with ID: ${userId} Not found!`)
-    }
-  } catch (error) {
-    res.status(500).send('Server Error!')
-  }
+  db.func('deleteuser', [req.params.id])
+    .then(() => {
+      res.status(200).send({
+        status: 'success',
+        message: `user with id: ${req.params.id} has been deleted successfully`,
+      })
+    })
+    .catch((error) => {
+      console.log(error)
+      res.status(500).send('Error from server')
+    })
 })
 
 module.exports = accountRoutes
