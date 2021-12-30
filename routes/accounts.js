@@ -1,8 +1,47 @@
 const express = require('express')
+const { queryResult } = require('pg-promise')
 const accountRoutes = express.Router()
 const db = require('../db/')
 
-accountRoutes.get('/', (req, res) => {
+// Functions
+const checkEmptyFields = async (req) => {
+  let fields = []
+  req.method === 'PUT'
+    ? (fields = ['id', 'email', 'password'])
+    : (fields = ['username', 'email', 'password'])
+
+  let emptyFields = []
+  let msg = ''
+
+  fields.map((item) => {
+    if (req.method === 'PUT' && 'username' in req.body === true) {
+      msg = 'You can not update your username! just Email and Password.'
+    } else if (item in req.body === false) {
+      emptyFields.push(item)
+    }
+  })
+  string = emptyFields.length > 1 ? 'fields' : 'field'
+
+  return { emptyFields, string, msg }
+}
+
+const checkUserExist = async (id) => {
+  let user = null
+
+  await db
+    .func('finduser', [id], queryResult.one)
+    .then((rows) => {
+      user = rows
+    })
+    .catch((error) => {
+      console.log(error)
+    })
+
+  return user
+}
+
+// Routes
+accountRoutes.get('/', async (req, res) => {
   let page = 1
   let limit = 5
   if (req.query.page !== undefined && req.query.limit !== undefined) {
@@ -10,80 +49,149 @@ accountRoutes.get('/', (req, res) => {
     limit = req.query.limit
   }
 
-  db.func('getuserslist', [page, limit])
+  await db
+    .func('getuserslist', [page, limit])
     .then((rows) => {
-      res.json(rows)
-    })
-    .catch((error) => {
-      console.log(error)
-      res.status(500).send('Error from server')
-    })
-})
+      const total = rows[0].totalrecords
 
-accountRoutes.get('/:id', (req, res) => {
-  db.func('finduser', [req.params.id])
-    .then((rows) => {
-      res.json(rows)
-    })
-    .catch((error) => {
-      console.log(error)
-      res.status(500).send('Error from server')
-    })
-})
+      for (let index = 0; index < total; index++) {
+        delete rows[index].totalrecords
+      }
 
-accountRoutes.post('/', (req, res) => {
-  if (
-    req.body.username !== undefined &&
-    req.body.email !== undefined &&
-    req.body.password !== undefined
-  ) {
-    db.func('AddUsers', [req.body.username, req.body.email, req.body.password])
-      .then(() => {
-        res.status(200).send(`new account with id: has been added successfully`)
-      })
-      .catch((error) => {
-        console.log(error)
-        res.status(500).send('Error from server')
-      })
-  } else {
-    let fields = ['username', 'email', 'password']
-    let emptyFields = []
-    fields.map((item) => {
-      if (item in req.body === false) {
-        emptyFields.push(item)
+      if (rows.length !== 0) {
+        res.status(200).send({
+          pageIndex: page,
+          totalRecords: total,
+          users: rows,
+        })
+      } else {
+        res.status(200).send({
+          pageIndex: page,
+          totalRecords: total,
+          message: 'There is no user anymore!',
+        })
       }
     })
-    console.log(emptyFields)
-    res.status(400).send(`Your data does'nt have ${emptyFields} fields`)
+    .catch((error) => {
+      console.log(error)
+      res.status(500).send({ status: 'failed', message: 'Error from server' })
+    })
+})
+
+accountRoutes.get('/:id', async (req, res) => {
+  const userExist = await checkUserExist(req.params.id)
+  console.log(userExist)
+  if (userExist) {
+    res.status(200).send({
+      status: 'success',
+      message: 'User founded!',
+      user: userExist,
+    })
+  } else {
+    res.status(404).send({
+      status: 'failed',
+      message: `User with ID: ${req.params.id} not found!`,
+    })
   }
 })
 
-accountRoutes.put('/:id', (req, res) => {
-  db.func('updateuser', [req.params.id, req.body.email, req.body.password])
-    .then(() => {
-      res.status(200).send({
-        status: 'success',
-        message: `user with id: ${req.params.id} has been updated successfully`,
+accountRoutes.post('/', async (req, res) => {
+  const { emptyFields, string } = await checkEmptyFields(req)
+  if (emptyFields.length === 0) {
+    await db
+      .func('addusers', [req.body.username, req.body.email, req.body.password])
+      .then(() => {
+        res.status(200).send({
+          status: 'success',
+          message: `new account with ID: has been added successfully`,
+        })
       })
+      .catch((error) => {
+        console.log(error)
+        res.status(500).send({ status: 'failed', message: 'Error from server' })
+      })
+  } else {
+    res.status(400).send({
+      status: 'failed',
+      message: `Your data does'nt have ${emptyFields} ${string}`,
     })
-    .catch((error) => {
-      console.log(error)
-      res.status(500).send('Error from server')
-    })
+  }
 })
 
-accountRoutes.delete('/:id', (req, res) => {
-  db.func('deleteuser', [req.params.id])
-    .then(() => {
-      res.status(200).send({
-        status: 'success',
-        message: `user with id: ${req.params.id} has been deleted successfully`,
+accountRoutes.put('/', async (req, res) => {
+  const { emptyFields, string, msg } = await checkEmptyFields(req)
+  const checkUserId = emptyFields.find((item) => item === 'id')
+
+  if (checkUserId) {
+    res.status(400).send({
+      status: 'failed',
+      message: `Your data does'nt have the id field!`,
+    })
+  } else {
+    if (msg !== '') {
+      res.status(400).send({ status: 'failed', message: msg })
+    } else if (emptyFields.length !== 0 && msg === '') {
+      res.status(400).send({
+        status: 'failed',
+        message: `Your data does'nt have ${emptyFields} ${string}`,
       })
+    } else {
+      const userExist = await checkUserExist(req.body.id)
+      if (userExist) {
+        await db
+          .func('updateuser', [req.body.id, req.body.email, req.body.password])
+          .then(() => {
+            res.status(200).send({
+              status: 'success',
+              message: `user with ID: ${req.body.id} has been updated successfully`,
+            })
+          })
+          .catch((error) => {
+            console.log(error)
+            res
+              .status(500)
+              .send({ status: 'failed', message: 'Error from server' })
+          })
+      } else {
+        res.status(404).send({
+          status: 'failed',
+          message: `User with ID: ${req.body.id} Not found!`,
+        })
+      }
+    }
+  }
+})
+
+accountRoutes.delete('/', async (req, res) => {
+  if (req.body.id) {
+    const userExist = checkUserExist(req.body.id)
+    if (userExist) {
+      await db
+        .func('deleteuser', [req.body.id])
+        .then(() => {
+          res.status(200).send({
+            status: 'success',
+            message: `User with ID: ${req.body.id} has been deleted successfully`,
+          })
+        })
+        .catch((error) => {
+          console.log(error)
+          res
+            .status(500)
+            .send({ status: 'failed', message: 'Error from server' })
+        })
+    } else {
+      res.status(404).send({
+        status: 'failed',
+        message: `User with ID: ${req.body.id} Not found!`,
+      })
+    }
+  } else {
+    res.status(400).send({
+      status: 'failed',
+      message: `Your data does'nt have the id field!`,
     })
-    .catch((error) => {
-      console.log(error)
-      res.status(500).send('Error from server')
-    })
+  }
 })
 
 module.exports = accountRoutes

@@ -45,18 +45,15 @@ paths:
                 items:
                   type: object
                   properties:
-                    id:
+                    _id:
                       type: integer
                       example: 1465
-                    username:
+                    _username:
                       type: string
                       example: 'shiva'
-                    email:
+                    _email:
                       type: 'string'
                       example: 'shiva@gmail.com'
-                    password:
-                      type: string
-                      example: 'P@ssW0rd'
 
         '500':
           description: Error server
@@ -86,21 +83,26 @@ paths:
               schema:
                 type: string
                 example: 'new account with id:1465 has been added successfully'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have password, email fields'
         '500':
           description: server error
           content:
             application/json:
               schema:
                 type: string
+                example: 'Error from server'
       parameters:
         - in: header
           name: new user info
           schema:
             type: object
             properties:
-              id:
-                type: integer
-                example: 1465
               username:
                 type: string
                 example: 'shiva'
@@ -111,20 +113,25 @@ paths:
                 type: string
                 example: 'P@ssW0rd'
           required: true
-
-  /accounts/{userId}:
     put:
       summary: Update a user.
       tags:
         - Accounts
       responses:
         '200': # status code
-          description: udate user
+          description: update user
           content:
             application/json:
               schema:
                 type: string
                 example: 'Account with id:1465 has been updated successfully'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have the id field!/ You can not update your username! just Email and Password./ Your data does not have password, email fields'
         '404':
           description: not found user
           content:
@@ -140,10 +147,20 @@ paths:
                 type: string
                 example: 'server error'
       parameters:
-        - in: path
-          name: userId
+        - in: header
+          name: update a user info
           schema:
-            type: integer
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+              email:
+                type: string
+                example: 'shiva@gmail.com'
+              password:
+                type: 'string'
+                example: 'P@ssW0rd'
           required: true
     delete:
       summary: Delete a user.
@@ -157,6 +174,13 @@ paths:
               schema:
                 type: string
                 example: 'Account with id:1465 has been deleted'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have the id field!'
         '404':
           description: not found user
           content:
@@ -171,6 +195,56 @@ paths:
               schema:
                 type: string
                 example: 'server error'
+      parameters:
+        - in: header
+          name: delete a user
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+          required: true
+
+  /accounts/{userId}:
+    get:
+      summary: Return founded user by id
+      tags:
+        - Accounts
+      responses:
+        '200': # status code
+          description: A JSON array of founded user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _username:
+                      type: string
+                      example: 'shiva'
+                    _email:
+                      type: 'string'
+                      example: 'shiva@gmail.com'
+
+        '404':
+          description: Not found user
+          content:
+            application/json:
+              schema:
+                type: string
+                example: User with id 12 not found!
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
       parameters:
         - in: path
           name: userId
