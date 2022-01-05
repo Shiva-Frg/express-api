@@ -54,9 +54,7 @@ accountRoutes.get('/', async (req, res) => {
     .then((rows) => {
       const total = rows[0].totalrecords
 
-      for (let index = 0; index < total; index++) {
-        delete rows[index].totalrecords
-      }
+      rows.map(item => delete item.totalrecords)
 
       if (rows.length !== 0) {
         res.status(200).send({
@@ -80,7 +78,6 @@ accountRoutes.get('/', async (req, res) => {
 
 accountRoutes.get('/:id', async (req, res) => {
   const userExist = await checkUserExist(req.params.id)
-  console.log(userExist)
   if (userExist) {
     res.status(200).send({
       status: 'success',
@@ -99,12 +96,20 @@ accountRoutes.post('/', async (req, res) => {
   const { emptyFields, string } = await checkEmptyFields(req)
   if (emptyFields.length === 0) {
     await db
-      .func('addusers', [req.body.username, req.body.email, req.body.password])
-      .then(() => {
-        res.status(200).send({
-          status: 'success',
-          message: `new account with ID: has been added successfully`,
-        })
+      .func('addusers', [req.body.username, req.body.email, req.body.password], queryResult.one)
+      .then((row) => {
+        console.log(row)
+        if (row.addusers === true) {
+          res.status(200).send({
+            status: 'failed',
+            message: `a user with this username and email does exists.`,
+          })
+        } else {
+          res.status(200).send({
+            status: 'success',
+            message: `new account with ID: ${row.addusers} has been added successfully`,
+          })
+        }
       })
       .catch((error) => {
         console.log(error)
