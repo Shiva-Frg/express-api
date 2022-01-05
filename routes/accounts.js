@@ -98,7 +98,6 @@ accountRoutes.post('/', async (req, res) => {
     await db
       .func('addusers', [req.body.username, req.body.email, req.body.password], queryResult.one)
       .then((row) => {
-        console.log(row)
         if (row.addusers === true) {
           res.status(200).send({
             status: 'failed',
