@@ -52,11 +52,9 @@ accountRoutes.get('/', async (req, res) => {
   await db
     .func('getuserslist', [page, limit])
     .then((rows) => {
-      const total = rows[0].totalrecords
-
-      rows.map(item => delete item.totalrecords)
-
       if (rows.length !== 0) {
+        const total = rows[0].totalrecords
+        rows.map((item) => delete item.totalrecords)
         res.status(200).send({
           pageIndex: page,
           totalRecords: total,
@@ -65,7 +63,7 @@ accountRoutes.get('/', async (req, res) => {
       } else {
         res.status(200).send({
           pageIndex: page,
-          totalRecords: total,
+          //totalRecords: total,
           message: 'There is no user anymore!',
         })
       }
@@ -96,7 +94,11 @@ accountRoutes.post('/', async (req, res) => {
   const { emptyFields, string } = await checkEmptyFields(req)
   if (emptyFields.length === 0) {
     await db
-      .func('addusers', [req.body.username, req.body.email, req.body.password], queryResult.one)
+      .func(
+        'addusers',
+        [req.body.username, req.body.email, req.body.password],
+        queryResult.one
+      )
       .then((row) => {
         if (row.addusers === true) {
           res.status(200).send({
