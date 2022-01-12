@@ -8,7 +8,7 @@ const checkEmptyFields = async (req) => {
   let fields = []
   req.method === 'PUT'
     ? (fields = ['id', 'email', 'password'])
-    : (fields = ['username', 'email', 'password'])
+    : (fields = ['name', 'family', 'email', 'username', 'mobile', 'password'])
 
   let emptyFields = []
   let msg = ''
@@ -29,7 +29,7 @@ const checkUserExist = async (id) => {
   let user = null
 
   await db
-    .func('finduser', [id], queryResult.one)
+    .func('finduserwithidinuserstable', [id], queryResult.one)
     .then((rows) => {
       user = rows
     })
@@ -52,21 +52,18 @@ accountRoutes.get('/', async (req, res) => {
   await db
     .func('getuserslist', [page, limit])
     .then((rows) => {
-      if (rows.length !== 0) {
-        const total = rows[0].totalrecords
-        rows.map((item) => delete item.totalrecords)
-        res.status(200).send({
-          pageIndex: page,
-          totalRecords: total,
-          users: rows,
-        })
-      } else {
-        res.status(200).send({
-          pageIndex: page,
-          //totalRecords: total,
-          message: 'There is no user anymore!',
-        })
-      }
+      let total = 0
+      let contentOfUsers = null
+      rows.length !== 0 ? (total = rows[0].totalrecords) : (total = 0)
+      rows.length !== 0
+        ? (contentOfUsers = rows)
+        : (contentOfUsers = 'There is no user anymore!')
+      rows.map((item) => delete item.totalrecords)
+      res.status(200).send({
+        pageIndex: page,
+        totalRecords: total,
+        users: contentOfUsers,
+      })
     })
     .catch((error) => {
       console.log(error)
@@ -92,30 +89,48 @@ accountRoutes.get('/:id', async (req, res) => {
 
 accountRoutes.post('/', async (req, res) => {
   const { emptyFields, string } = await checkEmptyFields(req)
+  let userExists = false
+
   if (emptyFields.length === 0) {
     await db
       .func(
-        'addusers',
-        [req.body.username, req.body.email, req.body.password],
+        'checkuserexistsatpostdata',
+        [req.body.username, req.body.email],
         queryResult.one
       )
       .then((row) => {
-        if (row.addusers === true) {
-          res.status(200).send({
-            status: 'failed',
-            message: `a user with this username and email does exists.`,
-          })
-        } else {
-          res.status(200).send({
-            status: 'success',
-            message: `new account with ID: ${row.addusers} has been added successfully`,
-          })
-        }
+        userExists = row.checkuserexistsatpostdata
       })
       .catch((error) => {
         console.log(error)
         res.status(500).send({ status: 'failed', message: 'Error from server' })
       })
+
+    if (userExists === false) {
+      await db
+        .func(
+          'adduserstotable',
+          [req.body.username, req.body.email, req.body.password],
+          queryResult.one
+        )
+        .then((row) => {
+          res.status(200).send({
+            status: 'success',
+            message: `new account with ID: ${row.addusers} has been added successfully`,
+          })
+        })
+        .catch((error) => {
+          console.log(error)
+          res
+            .status(500)
+            .send({ status: 'failed', message: 'Error from server' })
+        })
+    } else {
+      res.status(404).send({
+        status: 'failed',
+        message: 'an account with this username and email does exists',
+      })
+    }
   } else {
     res.status(400).send({
       status: 'failed',
@@ -125,6 +140,11 @@ accountRoutes.post('/', async (req, res) => {
 })
 
 accountRoutes.put('/', async (req, res) => {
+  // let param = []
+  // Object.keys(req.body).map((item) => {
+  //   param.push(item)
+  // })
+
   const { emptyFields, string, msg } = await checkEmptyFields(req)
   const checkUserId = emptyFields.find((item) => item === 'id')
 
