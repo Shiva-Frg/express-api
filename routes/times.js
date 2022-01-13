@@ -112,14 +112,14 @@ timesRoutes.post('/', async (req, res) => {
     if (timeExists === false) {
       await db
         .func(
-          'addtimetotimes',
+          'addtimetotimestable',
           [req.body.startOfBooking, req.body.endOfBooking, req.body.reserved],
           queryResult.one
         )
         .then((row) => {
           res.status(200).send({
             status: 'success',
-            message: `new time with ID: ${row.addtimetotimes} has been added successfully`,
+            message: `new time with ID: ${row.addtimetotimestable} has been added successfully`,
           })
         })
         .catch((error) => {

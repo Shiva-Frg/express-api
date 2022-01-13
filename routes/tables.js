@@ -102,14 +102,14 @@ tablesRoutes.post('/', async (req, res) => {
     if (tableExists === false) {
       await db
         .func(
-          'addtabletotables',
+          'addtabletotablestable',
           [req.body.title, req.body.people],
           queryResult.one
         )
         .then((row) => {
           res.status(200).send({
             status: 'success',
-            message: `new table with ID: ${row.addtabletotables} has been added successfully`,
+            message: `new table with ID: ${row.addtabletotablestable} has been added successfully`,
           })
         })
         .catch((error) => {

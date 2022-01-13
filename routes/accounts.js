@@ -109,14 +109,14 @@ accountRoutes.post('/', async (req, res) => {
     if (userExists === false) {
       await db
         .func(
-          'addusertotable',
+          'addusertouserstable',
           [req.body.username, req.body.email, req.body.password],
           queryResult.one
         )
         .then((row) => {
           res.status(200).send({
             status: 'success',
-            message: `new account with ID: ${row.addusertotable} has been added successfully`,
+            message: `new account with ID: ${row.addusertouserstable} has been added successfully`,
           })
         })
         .catch((error) => {

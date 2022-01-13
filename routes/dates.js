@@ -99,11 +99,11 @@ datesRoutes.post('/', async (req, res) => {
 
     if (dateExists === false) {
       await db
-        .func('adddatetodates', [req.body.date], queryResult.one)
+        .func('adddatetodatestable', [req.body.date], queryResult.one)
         .then((row) => {
           res.status(200).send({
             status: 'success',
-            message: `new date with ID: ${row.adddatetodates} has been added successfully`,
+            message: `new date with ID: ${row.adddatetodatestable} has been added successfully`,
           })
         })
         .catch((error) => {
@@ -127,11 +127,6 @@ datesRoutes.post('/', async (req, res) => {
 })
 
 datesRoutes.put('/', async (req, res) => {
-  // let param = []
-  // Object.keys(req.body).map((item) => {
-  //   param.push(item)
-  // })
-
   const { emptyFields, string } = await checkEmptyFields(req)
   const checkDateId = emptyFields.find((item) => item === 'id')
 
