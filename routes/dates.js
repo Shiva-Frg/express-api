@@ -4,17 +4,18 @@ const datesRoutes = express.Router()
 const db = require('../db/')
 
 //Functions
-const checkEmptyFields = async (req) => {
-  let fields = ['date']
+const validateField = async (req) => {
+  let field = 'date'
 
-  let emptyFields = []
+  let msg = ``
 
-  if (fields in req.body === false) {
-    emptyFields.push(item)
+  if (field in req.body === false) {
+    msg = `Your data does'nt have ${field} field!`
+  } else if (req.body[field].length > 10 || req.body[field].length < 10) {
+    msg = `${field} must be have 10 characters like 1400/10/01`
   }
-  string = 'field'
 
-  return { emptyFields, string }
+  return { msg }
 }
 
 const checkDateExist = async (id) => {
@@ -80,10 +81,10 @@ datesRoutes.get('/:id', async (req, res) => {
 })
 
 datesRoutes.post('/', async (req, res) => {
-  const { emptyFields, string } = await checkEmptyFields(req)
+  const { msg } = await validateField(req)
   let dateExists = false
 
-  if (emptyFields.length === 0) {
+  if (msg === ``) {
     await db
       .func('checkdateexistsatpostdata', [req.body.date], queryResult.one)
       .then((row) => {
@@ -118,7 +119,7 @@ datesRoutes.post('/', async (req, res) => {
   } else {
     res.status(400).send({
       status: 'failed',
-      message: `Your data does'nt have ${emptyFields} ${string}`,
+      message: `${msg}`,
     })
   }
 })

@@ -133,11 +133,6 @@ tablesRoutes.post('/', async (req, res) => {
 })
 
 tablesRoutes.put('/', async (req, res) => {
-  // let param = []
-  // Object.keys(req.body).map((item) => {
-  //   param.push(item)
-  // })
-
   const { emptyFields, string } = await checkEmptyFields(req)
   const checkTableId = emptyFields.find((item) => item === 'id')
 

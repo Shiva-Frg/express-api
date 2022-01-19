@@ -4,19 +4,44 @@ const timesRoutes = express.Router()
 const db = require('../db/')
 
 //Functions
-const checkEmptyFields = async (req) => {
+const validateFields = async (req) => {
   let fields = ['startOfBooking', 'endOfBooking', 'reserved']
 
   let emptyFields = []
+  let wrongFields = []
+  let string = ``
+  let msg = ``
 
   fields.map((item) => {
     if (item in req.body === false) {
       emptyFields.push(item)
+    } else {
+      if (
+        (item === 'startOfBooking' || item === 'endOfBooking') &&
+        (req.body[item].length > 5 || req.body[item].length < 5)
+      ) {
+        wrongFields.push(`${item} must be have 5 character like 15:05`)
+      } else if (
+        item === 'reserved' &&
+        req.body[item] !== 'ready' &&
+        req.body[item] !== 'reserved'
+      ) {
+        wrongFields.push(`${item} must be (ready) or (reserved)`)
+      }
     }
   })
+
   string = emptyFields.length > 1 ? 'fields' : 'field'
 
-  return { emptyFields, string }
+  if (emptyFields.length > 0 && wrongFields.length > 0) {
+    msg = `Your data does'nt have ${emptyFields} ${string} and ${wrongFields}`
+  } else if (emptyFields.length > 0 && wrongFields.length === 0) {
+    msg = `Your data does'nt have ${emptyFields} ${string}`
+  } else if (emptyFields.length === 0 && wrongFields.length > 0) {
+    msg = `${wrongFields}`
+  }
+
+  return { msg }
 }
 
 const checkTimeExist = async (id) => {
@@ -82,10 +107,11 @@ timesRoutes.get('/:id', async (req, res) => {
 })
 
 timesRoutes.post('/', async (req, res) => {
-  const { emptyFields, string } = await checkEmptyFields(req)
+  const { msg } = await validateFields(req)
   let timeExists = false
 
-  if (emptyFields.length === 0) {
+  if (msg === ``) {
+    req.body.reserved
     await db
       .func(
         'checktimeexistsatpostdata',
@@ -128,7 +154,7 @@ timesRoutes.post('/', async (req, res) => {
   } else {
     res.status(400).send({
       status: 'failed',
-      message: `Your data does'nt have ${emptyFields} ${string}`,
+      message: `${msg}`,
     })
   }
 })

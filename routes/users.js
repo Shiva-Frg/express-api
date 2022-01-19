@@ -7,7 +7,7 @@ const db = require('../db')
 const checkEmptyFields = async (req) => {
   let fields = []
   req.method === 'PUT'
-    ? (fields = ['id', 'email', 'password'])
+    ? (fields = ['id', 'name', 'family', 'email', 'mobile', 'password'])
     : (fields = ['name', 'family', 'email', 'username', 'mobile', 'password'])
 
   let emptyFields = []
