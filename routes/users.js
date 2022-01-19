@@ -1,7 +1,7 @@
 const express = require('express')
 const { queryResult } = require('pg-promise')
-const accountRoutes = express.Router()
-const db = require('../db/')
+const usersRoutes = express.Router()
+const db = require('../db')
 
 // Functions
 const checkEmptyFields = async (req) => {
@@ -41,7 +41,7 @@ const checkUserExist = async (id) => {
 }
 
 // Routes
-accountRoutes.get('/', async (req, res) => {
+usersRoutes.get('/', async (req, res) => {
   let page = 1
   let limit = 5
   if (req.query.page !== undefined && req.query.limit !== undefined) {
@@ -71,7 +71,7 @@ accountRoutes.get('/', async (req, res) => {
     })
 })
 
-accountRoutes.get('/:id', async (req, res) => {
+usersRoutes.get('/:id', async (req, res) => {
   const userExist = await checkUserExist(req.params.id)
   if (userExist) {
     res.status(200).send({
@@ -87,7 +87,7 @@ accountRoutes.get('/:id', async (req, res) => {
   }
 })
 
-accountRoutes.post('/', async (req, res) => {
+usersRoutes.post('/', async (req, res) => {
   const { emptyFields, string } = await checkEmptyFields(req)
   let userExists = false
 
@@ -116,7 +116,7 @@ accountRoutes.post('/', async (req, res) => {
         .then((row) => {
           res.status(200).send({
             status: 'success',
-            message: `new account with ID: ${row.addusertouserstable} has been added successfully`,
+            message: `new user with ID: ${row.addusertouserstable} has been added successfully`,
           })
         })
         .catch((error) => {
@@ -128,7 +128,7 @@ accountRoutes.post('/', async (req, res) => {
     } else {
       res.status(404).send({
         status: 'failed',
-        message: 'an account with this username and email does exists',
+        message: 'a user with this username and email does exists',
       })
     }
   } else {
@@ -139,12 +139,7 @@ accountRoutes.post('/', async (req, res) => {
   }
 })
 
-accountRoutes.put('/', async (req, res) => {
-  // let param = []
-  // Object.keys(req.body).map((item) => {
-  //   param.push(item)
-  // })
-
+usersRoutes.put('/', async (req, res) => {
   const { emptyFields, string, msg } = await checkEmptyFields(req)
   const checkUserId = emptyFields.find((item) => item === 'id')
 
@@ -188,7 +183,7 @@ accountRoutes.put('/', async (req, res) => {
   }
 })
 
-accountRoutes.delete('/', async (req, res) => {
+usersRoutes.delete('/', async (req, res) => {
   if (req.body.id) {
     const userExist = checkUserExist(req.body.id)
     if (userExist) {
@@ -220,4 +215,4 @@ accountRoutes.delete('/', async (req, res) => {
   }
 })
 
-module.exports = accountRoutes
+module.exports = usersRoutes

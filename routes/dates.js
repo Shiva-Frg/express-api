@@ -5,17 +5,14 @@ const db = require('../db/')
 
 //Functions
 const checkEmptyFields = async (req) => {
-  let fields = []
-  req.method === 'PUT' ? (fields = ['id', 'date']) : (fields = ['date'])
+  let fields = ['date']
 
   let emptyFields = []
 
-  fields.map((item) => {
-    if (item in req.body === false) {
-      emptyFields.push(item)
-    }
-  })
-  string = emptyFields.length > 1 ? 'fields' : 'field'
+  if (fields in req.body === false) {
+    emptyFields.push(item)
+  }
+  string = 'field'
 
   return { emptyFields, string }
 }
@@ -123,48 +120,6 @@ datesRoutes.post('/', async (req, res) => {
       status: 'failed',
       message: `Your data does'nt have ${emptyFields} ${string}`,
     })
-  }
-})
-
-datesRoutes.put('/', async (req, res) => {
-  const { emptyFields, string } = await checkEmptyFields(req)
-  const checkDateId = emptyFields.find((item) => item === 'id')
-
-  if (checkDateId) {
-    res.status(400).send({
-      status: 'failed',
-      message: `Your data does'nt have the id field!`,
-    })
-  } else {
-    if (emptyFields.length !== 0) {
-      res.status(400).send({
-        status: 'failed',
-        message: `Your data does'nt have ${emptyFields} ${string}`,
-      })
-    } else {
-      const dateExist = await checkDateExist(req.body.id)
-      if (dateExist) {
-        await db
-          .func('updatedate', [req.body.id, req.body.date])
-          .then(() => {
-            res.status(200).send({
-              status: 'success',
-              message: `Date with ID: ${req.body.id} has been updated successfully`,
-            })
-          })
-          .catch((error) => {
-            console.log(error)
-            res
-              .status(500)
-              .send({ status: 'failed', message: 'Error from server' })
-          })
-      } else {
-        res.status(404).send({
-          status: 'failed',
-          message: `Date with ID: ${req.body.id} Not found!`,
-        })
-      }
-    }
   }
 })
 

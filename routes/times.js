@@ -5,21 +5,12 @@ const db = require('../db/')
 
 //Functions
 const checkEmptyFields = async (req) => {
-  let fields = []
-  req.method === 'PUT'
-    ? (fields = ['id', 'reserved'])
-    : (fields = ['startOfBooking', 'endOfBooking', 'reserved'])
+  let fields = ['startOfBooking', 'endOfBooking', 'reserved']
 
   let emptyFields = []
 
   fields.map((item) => {
-    if (
-      req.method === 'PUT' &&
-      'startOfBooking' in req.body === true &&
-      'endOfBooking' in req.body === true
-    ) {
-      msg = 'You can not update your start and end of booking! just reserved!'
-    } else if (item in req.body === false) {
+    if (item in req.body === false) {
       emptyFields.push(item)
     }
   })
@@ -139,50 +130,6 @@ timesRoutes.post('/', async (req, res) => {
       status: 'failed',
       message: `Your data does'nt have ${emptyFields} ${string}`,
     })
-  }
-})
-
-timesRoutes.put('/', async (req, res) => {
-  const { emptyFields, string, msg } = await checkEmptyFields(req)
-  const checkTimeId = emptyFields.find((item) => item === 'id')
-
-  if (checkTimeId) {
-    res.status(400).send({
-      status: 'failed',
-      message: `Your data does'nt have the id field!`,
-    })
-  } else {
-    if (msg !== '') {
-      res.status(400).send({ status: 'failed', message: msg })
-    } else if (emptyFields.length !== 0) {
-      res.status(400).send({
-        status: 'failed',
-        message: `Your data does'nt have ${emptyFields} ${string}`,
-      })
-    } else {
-      const timeExist = await checkTimeExist(req.body.id)
-      if (timeExist) {
-        await db
-          .func('updatetime', [req.body.id, req.body.reserved])
-          .then(() => {
-            res.status(200).send({
-              status: 'success',
-              message: `Time with ID: ${req.body.id} has been updated successfully`,
-            })
-          })
-          .catch((error) => {
-            console.log(error)
-            res
-              .status(500)
-              .send({ status: 'failed', message: 'Error from server' })
-          })
-      } else {
-        res.status(404).send({
-          status: 'failed',
-          message: `Time with ID: ${req.body.id} Not found!`,
-        })
-      }
-    }
   }
 })
 
