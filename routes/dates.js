@@ -113,7 +113,7 @@ datesRoutes.post('/', async (req, res) => {
     } else {
       res.status(404).send({
         status: 'failed',
-        message: 'a date with this title does exists',
+        message: 'a date with this date does exists',
       })
     }
   } else {

@@ -6,7 +6,7 @@ const tablesRoutes = require('./tables.js')
 const datesRoutes = require('./dates.js')
 const timesRoutes = require('./times.js')
 
-router.use('/accounts', usersRoutes)
+router.use('/users', usersRoutes)
 router.use('/tables', tablesRoutes)
 router.use('/dates', datesRoutes)
 router.use('/times', timesRoutes)

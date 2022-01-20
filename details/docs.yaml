@@ -1,40 +1,118 @@
 componets:
   schemas:
-    Accounts:
+    Users:
       type: object
       required:
-        - id
-        - username
+        - name
+        - family
         - email
+        - username
+        - mobile
         - password
       properties:
         id:
           type: integer,
           description: The auto-generated id of the user.
-        username:
+        name:
           type: string,
-          description: The username of the user.
+          description: The name of the user.
+        family:
+          type: string,
+          description: The family of the user.
         email:
           type: string,
           description: The email of the user.
+        username:
+          type: string,
+          description: The username of the user.
+        mobile:
+          type: integer,
+          description: The phone number of the user.
         password:
           type: string,
           description: The password of the user.
       example:
         id: 1456
-        username: shiva
+        name: shiva
+        family: foroughan
         email: shiva@gmail.com
+        username: shiva.frg
+        mobile: 09170001122
         password: p@ssW0rd
+    tables:
+      type: object
+      required:
+        - title
+        - people
+      properties:
+        id:
+          type: integer,
+          description: The auto-generated id of the table.
+        title:
+          type: string,
+          description: The name of the table.
+        people:
+          type: integer,
+          description: The number of people to book.
+      example:
+        id: 1456
+        title: 1
+        people: 4
+    dates:
+      type: object
+      required:
+        - date
+      properties:
+        id:
+          type: integer,
+          description: The auto-generated id of the date.
+        date:
+          type: string,
+          description: available dates to reserve that must be 10 characters.
+      example:
+        id: 1456
+        date: '1400/10/01'
+    times:
+      type: object
+      required:
+        - startOfBooking
+        - endOfBooking
+        - reserved
+      properties:
+        id:
+          type: integer,
+          description: The auto-generated id of the date.
+        startOfBooking:
+          type: string,
+          description: start time of the reserve that must be 5 characters.
+        endOfBooking:
+          type: string,
+          description: end time of the reserve that must be 5 characters.
+        reserved:
+          type: string,
+          description: status of the reserve time that must be (ready) or (reserved).
+      example:
+        id: 1456
+        startOfBooking: '14:30'
+        endOfBooking: '16:30'
+        reserved: 'ready/reserved'
 tags:
-  - name: Accounts
-    description: API to manage your accounts.
+  - name: Users
+    description: API's to manage your users.
+  - name: Tables
+    description: API's to manage your tables.
+  - name: Dates
+    description: API's to manage your dates.
+  - name: Times
+    description: API's to manage your times.
 
 paths:
-  /accounts/:
+  #users paths
+  /users/:
     get:
       summary: Returns a list of users.
       tags:
-        - Accounts
+        - Users
       responses:
         '200': # status code
           description: A JSON array of users
@@ -47,13 +125,25 @@ paths:
                   properties:
                     _id:
                       type: integer
-                      example: 1465
+                      example: 2
+                    _name:
+                      type: string
+                      example: 'jack'
+                    _family:
+                      type: string
+                      example: 'wood'
+                    _email:
+                      type: string
+                      example: 'jack.wood@gmail.com'
                     _username:
                       type: string
-                      example: 'shiva'
-                    _email:
+                      example: 'jack.wd'
+                    _mobile:
+                      type: integer
+                      example: 09170001112
+                    _password:
                       type: 'string'
-                      example: 'shiva@gmail.com'
+                      example: 'P@ssW0rd'
 
         '500':
           description: Error server
@@ -74,7 +164,7 @@ paths:
     post:
       summary: Creates a new user.
       tags:
-        - Accounts
+        - Users
       responses:
         '200': # status code
           description: The created user.
@@ -82,7 +172,7 @@ paths:
             application/json:
               schema:
                 type: string
-                example: 'new account with id:1465 has been added successfully'
+                example: 'new user with id:1465 has been added successfully'
         '400':
           description: empty fields
           content:
@@ -90,6 +180,13 @@ paths:
               schema:
                 type: string
                 example: 'Your data does not have password, email fields'
+        '404':
+          description: user exists
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'a user with this username and email does exists'
         '500':
           description: server error
           content:
@@ -103,20 +200,32 @@ paths:
           schema:
             type: object
             properties:
+              id:
+                type: integer
+                example: 2
+              name:
+                type: string
+                example: 'jack'
+              family:
+                type: string
+                example: 'wood'
+              email:
+                type: string
+                example: 'jack.wood@gmail.com'
               username:
                 type: string
-                example: 'shiva'
-              email:
-                type: 'string'
-                example: 'shiva@gmail.com'
+                example: 'jack.wd'
+              mobile:
+                type: integer
+                example: 09170001112
               password:
-                type: string
+                type: 'string'
                 example: 'P@ssW0rd'
           required: true
     put:
       summary: Update a user.
       tags:
-        - Accounts
+        - Users
       responses:
         '200': # status code
           description: update user
@@ -124,7 +233,7 @@ paths:
             application/json:
               schema:
                 type: string
-                example: 'Account with id:1465 has been updated successfully'
+                example: 'User with id:1465 has been updated successfully'
         '400':
           description: empty fields
           content:
@@ -138,7 +247,7 @@ paths:
             application/json:
               schema:
                 type: string
-                example: 'Account with ID:1465 Not found!'
+                example: 'User with ID:1465 Not found!'
         '500':
           description: Error server
           content:
@@ -155,9 +264,18 @@ paths:
               id:
                 type: integer
                 example: 2
+              name:
+                type: string
+                example: 'jack'
+              family:
+                type: string
+                example: 'wood'
               email:
                 type: string
-                example: 'shiva@gmail.com'
+                example: 'jack.wood@gmail.com'
+              mobile:
+                type: integer
+                example: 09170001112
               password:
                 type: 'string'
                 example: 'P@ssW0rd'
@@ -165,7 +283,7 @@ paths:
     delete:
       summary: Delete a user.
       tags:
-        - Accounts
+        - Users
       responses:
         '200': # status code
           description: delete user
@@ -173,7 +291,7 @@ paths:
             application/json:
               schema:
                 type: string
-                example: 'Account with id:1465 has been deleted'
+                example: 'User with id:1465 has been deleted'
         '400':
           description: empty fields
           content:
@@ -187,7 +305,7 @@ paths:
             application/json:
               schema:
                 type: string
-                example: 'Account with ID:1465 Not found!'
+                example: 'User with ID:1465 Not found!'
         '500':
           description: Error server
           content:
@@ -206,11 +324,11 @@ paths:
                 example: 2
           required: true
 
-  /accounts/{userId}:
+  /users/{userId}:
     get:
       summary: Return founded user by id
       tags:
-        - Accounts
+        - Users
       responses:
         '200': # status code
           description: A JSON array of founded user
@@ -223,13 +341,25 @@ paths:
                   properties:
                     _id:
                       type: integer
-                      example: 1465
+                      example: 2
+                    _name:
+                      type: string
+                      example: 'jack'
+                    _family:
+                      type: string
+                      example: 'wood'
+                    _email:
+                      type: string
+                      example: 'jack.wood@gmail.com'
                     _username:
                       type: string
-                      example: 'shiva'
-                    _email:
+                      example: 'jack.wd'
+                    _mobile:
+                      type: integer
+                      example: 09170001112
+                    _password:
                       type: 'string'
-                      example: 'shiva@gmail.com'
+                      example: 'P@ssW0rd'
 
         '404':
           description: Not found user
@@ -251,26 +381,664 @@ paths:
           schema:
             type: integer
           required: true
+  # tables paths
+  /tables/:
+    get:
+      summary: Returns a list of tables.
+      tags:
+        - Tables
+      responses:
+        '200': # status code
+          description: A JSON array of tables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _title:
+                      type: string
+                      example: '1'
+                    _people:
+                      type: integer
+                      example: 4
+
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+    post:
+      summary: Creates a new table.
+      tags:
+        - Tables
+      responses:
+        '200': # status code
+          description: The created table.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'new table with id:1465 has been added successfully'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have title, people fields'
+        '404':
+          description: table exists
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'a table with this title does exists'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Error from server'
+      parameters:
+        - in: header
+          name: new table info
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                example: '1'
+              people:
+                type: integer
+                example: 4
+          required: true
+    put:
+      summary: Update a table.
+      tags:
+        - Tables
+      responses:
+        '200': # status code
+          description: update table
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Table with id:1465 has been updated successfully'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have the id field!/ Your data does not have title, people fields'
+        '404':
+          description: not found table
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'table with ID:1465 Not found!'
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'server error'
+      parameters:
+        - in: header
+          name: update a table info
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+              title:
+                type: string
+                example: '5'
+              people:
+                type: integer
+                example: 3
+          required: true
+    delete:
+      summary: Delete a table.
+      tags:
+        - Tables
+      responses:
+        '200': # status code
+          description: delete table
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Table with id:1465 has been deleted'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have the id field!'
+        '404':
+          description: not found table
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Table with ID:1465 Not found!'
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'server error'
+      parameters:
+        - in: header
+          name: delete a table
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+          required: true
+
+  /tables/{tableId}:
+    get:
+      summary: Return founded table by id
+      tags:
+        - Tables
+      responses:
+        '200': # status code
+          description: A JSON array of founded table
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _title:
+                      type: string
+                      example: '1'
+                    _people:
+                      type: integer
+                      example: 4
+
+        '404':
+          description: Not found table
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Table with id 12 not found!
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
+      parameters:
+        - in: path
+          name: tableId
+          schema:
+            type: integer
+          required: true
+  # dates paths
+  /dates/:
+    get:
+      summary: Returns a list of dates.
+      tags:
+        - Dates
+      responses:
+        '200': # status code
+          description: A JSON array of dates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _date:
+                      type: string
+                      example: '1400/10/01'
+
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+    post:
+      summary: Creates a new date.
+      tags:
+        - Dates
+      responses:
+        '200': # status code
+          description: The created date.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'new date with id:1465 has been added successfully'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have password, email fields'
+        '404':
+          description: date exists
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'a date with this date does exists'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Error from server'
+      parameters:
+        - in: header
+          name: new table info
+          schema:
+            type: object
+            properties:
+              date:
+                type: string
+                example: '1400/10/01'
+          required: true
+    delete:
+      summary: Delete a date.
+      tags:
+        - Dates
+      responses:
+        '200': # status code
+          description: delete date
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Date with id:1465 has been deleted'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have the id field!'
+        '404':
+          description: not found date
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'date with ID:1465 Not found!'
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'server error'
+      parameters:
+        - in: header
+          name: delete a date
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+          required: true
+
+  /dates/{dateId}:
+    get:
+      summary: Return founded date by id
+      tags:
+        - Dates
+      responses:
+        '200': # status code
+          description: A JSON array of founded date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _date:
+                      type: string
+                      example: '1400/10/01'
+
+        '404':
+          description: Not found date
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Date with id 12 not found!
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
+      parameters:
+        - in: path
+          name: dateId
+          schema:
+            type: integer
+          required: true
+  # times paths
+  /times/:
+    get:
+      summary: Returns a list of times.
+      tags:
+        - Times
+      responses:
+        '200': # status code
+          description: A JSON array of times
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _startOfBooking:
+                      type: string
+                      example: '14:30'
+                    _endOfBooking:
+                      type: string
+                      example: '16:30'
+                    _reserved:
+                      type: string
+                      example: 'ready/reserved'
+
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+    post:
+      summary: Creates a new time.
+      tags:
+        - Times
+      responses:
+        '200': # status code
+          description: The created time.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'new time with id:1465 has been added successfully'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have endOfBooking,reserved fields and startOfBooking must be have 5 character like 15:05'
+        '404':
+          description: date exists
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'a time with this start and end of booking time does exists'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Error from server'
+      parameters:
+        - in: header
+          name: new time info
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              startOfBooking:
+                type: string
+                example: '14:30'
+              endOfBooking:
+                type: string
+                example: '16:30'
+              reserved:
+                type: string
+                example: 'ready/reserved'
+          required: true
+    delete:
+      summary: Delete a time.
+      tags:
+        - Times
+      responses:
+        '200': # status code
+          description: delete time
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'time with id:1465 has been deleted'
+        '400':
+          description: empty fields
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'Your data does not have the id field!'
+        '404':
+          description: not found time
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'date with ID:1465 Not found!'
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: 'server error'
+      parameters:
+        - in: header
+          name: delete a time
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 2
+          required: true
+
+  /times/{timeId}:
+    get:
+      summary: Return founded time by id
+      tags:
+        - Times
+      responses:
+        '200': # status code
+          description: A JSON array of founded time
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: integer
+                      example: 1465
+                    _startOfBooking:
+                      type: string
+                      example: '14:30'
+                    _endOfBooking:
+                      type: string
+                      example: '14:30'
+                    _reserved:
+                      type: string
+                      example: 'ready/reserved'
+
+        '404':
+          description: Not found time
+          content:
+            application/json:
+              schema:
+                type: string
+                example: time with id 12 not found!
+        '500':
+          description: Error server
+          content:
+            application/json:
+              schema:
+                type: string
+                example: server error
+      parameters:
+        - in: path
+          name: timeId
+          schema:
+            type: integer
+          required: true
 components:
   schemas:
-    Account:
+    Users:
       type: object
       properties:
         id:
           type: integer
           example: 1465
-        username:
+        name:
           type: string
           example: Jack
+        family:
+          type: string
+          example: wood
         email:
           type: string
-          example: maddy@gmail.com
+          example: jack.wood@gmail.com
+        username:
+          type: string
+          example: Jack.wd
+        mobile:
+          type: integer
+          example: 09170001112
         password:
           type: string
           example: yddam5342
-      # Both properties are required
       required:
-        - id
-        - username
+        - name
+        - family
         - email
+        - username
+        - mobile
         - password
+    Tables:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1465
+        title:
+          type: string
+          example: '1'
+        people:
+          type: integer
+          example: 3
+      required:
+        - title
+        - people
+    Dates:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1465
+        date:
+          type: string
+          example: '1400/10/01'
+      required:
+        - date
+    Times:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1465
+        startOfBooking:
+          type: string
+          example: '14:30'
+        endOfBooking:
+          type: string
+          example: '16:30'
+        reserved:
+          type: string
+          example: 'ready/reserved'
+      required:
+        - startOfBooking
+        - endOfBooking
+        - reserved

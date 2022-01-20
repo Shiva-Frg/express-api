@@ -148,7 +148,7 @@ timesRoutes.post('/', async (req, res) => {
     } else {
       res.status(404).send({
         status: 'failed',
-        message: 'a time with this title does exists',
+        message: 'a time with this start and end of booking time does exists',
       })
     }
   } else {
